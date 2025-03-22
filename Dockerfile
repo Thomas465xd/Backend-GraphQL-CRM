@@ -13,11 +13,11 @@ RUN npm install
 # Copiar el resto de los archivos
 COPY . .
 
-# Compilar TypeScript (esto solo debe ocurrir una vez, al principio)
-RUN npm run build  # Asumiendo que tienes un script de build que compila TS a JS
+# Compilar TypeScript
+RUN npm run build
 
-# Exponer el puerto (si es necesario)
+# Exponer el puerto
 EXPOSE 4000
 
-# Comando de inicio: en desarrollo puedes usar tsc --watch
-CMD ["npm", "run", "dev"]  # Esto usará ts-node o cualquier script de desarrollo
+# Comando de inicio - sin corchetes ni comas
+CMD npm run dev

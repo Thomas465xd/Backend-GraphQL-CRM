@@ -1,44 +1,10 @@
 import { ApolloServer, gql } from "apollo-server-express";
 import express from "express";
+import colors from "colors";
+import resolvers from "./db/resolvers";
+import typeDefs from "./db/schema";
 
 const app = express();
-
-// Define schema
-const typeDefs = gql`
-
-    type Text {
-        title: String
-        body: String
-    }
-
-	type Query {
-		getText: Text
-	}
-`;
-
-const texts = [
-    {
-        title: "Hello, World! 1",
-        body: "This is a simple example of a GraphQL query."
-    }, 
-    {
-        title: "Hello, World! 2 ",
-        body: "This is a simple example of a GraphQL query."
-    }, 
-    {
-        title: "Hello, World! 3",
-        body: "This is a simple example of a GraphQL query."
-    }
-]
-
-// Define resolvers
-const resolvers = {
-	Query: {
-		getText: () => {
-            return texts[0];
-        }
-	},
-};
 
 // Start Apollo Server before exporting the app
 async function startServer() {
@@ -52,9 +18,9 @@ async function startServer() {
 	await server.start();
 	server.applyMiddleware({ app });
 
-	console.log(
+	console.log(colors.bold.cyan(
 		`🚀 GraphQL Server ready at http://localhost:4000${server.graphqlPath}`
-	);
+	));
 }
 
 startServer(); // Start Apollo Server
