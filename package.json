@@ -16,11 +16,17 @@
 		"nodemon": "^3.1.9"
 	},
 	"dependencies": {
+		"@types/bcrypt": "^5.0.2",
+		"@types/cors": "^2.8.17",
+		"@types/jsonwebtoken": "^9.0.9",
+		"@types/morgan": "^1.9.9",
 		"apollo-server-express": "^3.13.0",
 		"bcrypt": "^5.1.1",
 		"colors": "^1.4.0",
+		"cors": "^2.8.5",
 		"express": "^4.21.2",
 		"graphql": "^16.10.0",
+		"jsonwebtoken": "^9.0.2",
 		"ts-node": "^10.9.2",
 		"typescript": "^5.8.2"
 	},
