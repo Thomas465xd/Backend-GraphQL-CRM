@@ -2,7 +2,6 @@ import { gql } from "apollo-server-express";
 
 // Define schema
 const typeDefs = gql`
-
     type Text {
         title: String
         body: String
