@@ -1,4 +1,4 @@
-import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import User from "../models/User";
 import { comparePassword, hashPassword } from "../utils/auth";
 import { ApolloError } from "apollo-server-express";
