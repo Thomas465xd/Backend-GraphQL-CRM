@@ -26,6 +26,18 @@ const typeDefs = gql`
         createdAt: String
     }
 
+    # //^ Client Types
+    type Client {
+        id: ID
+        name: String
+        surname: String
+        businessName: String
+        role: String
+        email: String
+        phone: String
+        address: String
+    }
+
     # //? User Inputs
     input UserInput {
         # Create User Input
@@ -50,6 +62,17 @@ const typeDefs = gql`
         description: String
     }
 
+    # //^ Client Inputs
+    input ClientInput {
+        name: String!
+        surname: String!
+        businessName: String!
+        role: String!
+        email: String!
+        phone: String
+        address: String
+    }
+
     type Query {
         # //? User Queries
         getUser(token: String!) : User
@@ -57,6 +80,11 @@ const typeDefs = gql`
         # //& Product Queries
         getProducts : [Product]
         getProductById(id: ID!) : Product
+
+        # //^ Client Queries
+        getClients : [Client]
+        getSellerClients : [Client]
+        getClientById(id: ID!): Client
     }
 
     type Mutation {
@@ -68,6 +96,11 @@ const typeDefs = gql`
         createProduct(input: ProductInput) : Product
         updateProduct(id: ID!, input: ProductInput) : Product
         deleteProduct(id: ID!) : String
+
+        # //^ Client Mutations
+        createClient(input: ClientInput) : Client
+        updateClient(id: ID!, input: ClientInput) : Client
+        deleteClient(id: ID!) : String
     }
 `;
 

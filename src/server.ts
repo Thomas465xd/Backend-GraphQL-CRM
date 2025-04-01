@@ -1,5 +1,6 @@
 import { ApolloServer, gql } from "apollo-server-express";
 import express from "express";
+import jwt from "jsonwebtoken"; // JWT for authentication
 import morgan from "morgan"; // Logging middleware
 import dotenv from "dotenv";
 import colors from "colors";
@@ -22,7 +23,30 @@ async function startServer() {
     const server = new ApolloServer({ 
         typeDefs, 
         resolvers, 
-        context: ({ req, res }) => ({ req, res }),  // Pasamos res para modificar la respuesta
+        context: ({ req }) => { 
+            const authHeader = req.headers["authorization"] || "";
+            //console.log("Authorization Header:", authHeader); // 🔍 DEBUG
+        
+            const token = authHeader.replace("Bearer ", "").trim(); // Remove 'Bearer ' prefix
+            //console.log("Token after cleaning:", token); // 🔍 DEBUG
+        
+            if (token) {
+                try {
+                    // Get the JWT secret
+                    const secret = process.env.JWT_SECRET?.trim();
+                    if (!secret) throw new Error("JWT_SECRET is not defined");
+        
+                    // Verify and decode the token
+                    const user = jwt.verify(token, secret);
+                    //console.log("Decoded User:", user); // 🔍 DEBUG
+        
+                    return { user };
+                } catch (error) {
+                    //console.log("Error verifying token:", error.message);
+                    throw new Error("Invalid token");
+                }
+            }
+        },
         formatError: (err) => {
             if (err.extensions?.statusCode) {
                 return {

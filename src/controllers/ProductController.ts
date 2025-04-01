@@ -9,24 +9,6 @@ type ProductInput = {
     description?: string;
 }
 
-//? Create New Product
-export const createProduct = async (input : ProductInput) => {
-    try {
-        // Validate Product
-
-        // Create a new Product Instance
-        const product = new Product(input)
-
-        // Save Product in DB
-        const result = await product.save();
-        return result;
-    } catch (error) {
-        throw new ApolloError("Error creating product", "INTERNAL_SERVER_ERROR", {
-            statusCode: 500,
-        });
-    }
-}
-
 //? Get All Products
 export const getProducts = async () => {
     try {
@@ -52,6 +34,24 @@ export const getProductById = async (id: string) => {
         return product;
     } catch (error) {
         throw new ApolloError("Error fetching product", "INTERNAL_SERVER_ERROR", {
+            statusCode: 500,
+        });
+    }
+}
+
+//? Create New Product
+export const createProduct = async (input : ProductInput) => {
+    try {
+        // Validate Product
+
+        // Create a new Product Instance
+        const product = new Product(input)
+
+        // Save Product in DB
+        const result = await product.save();
+        return result;
+    } catch (error) {
+        throw new ApolloError("Error creating product", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
     }

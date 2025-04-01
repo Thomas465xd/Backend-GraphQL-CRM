@@ -4,9 +4,20 @@ import { comparePassword, hashPassword } from "../utils/auth";
 import { ApolloError } from "apollo-server-express";
 import { generateJWT } from "../utils/jwt";
 
+// User Input Type
+type UserInput = {
+    name: string;
+    surname: string;
+    email: string;
+    password: string;
+};
+
 // Create User Function
-export const createUser = async ({ email, password }) => {
+export const createUser = async (input) => {
     try {
+        // Validar input
+        const { name, surname, email, password } = input;
+
         // Verificar si el usuario ya existe
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -19,11 +30,12 @@ export const createUser = async ({ email, password }) => {
         const hashedPassword = await hashPassword(password);
 
         // Crear usuario
-        const user = new User({ email, password: hashedPassword });
+        const user = new User({ name, surname, email, password: hashedPassword });
         await user.save();
         
         return user;
     } catch (error) {
+        console.log(error)
         throw new ApolloError("Error creating user", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
