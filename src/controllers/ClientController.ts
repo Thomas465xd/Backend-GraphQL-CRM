@@ -1,5 +1,6 @@
 import { ApolloError } from "apollo-server-express"
 import Client from "../models/Client";
+import Order from "../models/Order";
 
 type ClientInput = {
     name: string,
@@ -190,5 +191,59 @@ export const deleteClient = async (id: string, ctx) => {
         throw new ApolloError("Error Deleting Client", "INTERNAL_SERVER_ERROR", {
             sttusCode: 500
         })
+    }
+}
+
+// * ADVANCE SEARCH METHODS * //
+
+export const getBestClients = async () => {
+    try {
+        const clients = await Order.aggregate([
+            {
+                $match: { status: "COMPLETED" }
+            },
+            {
+                $group: {
+                    _id: "$client", // Agrupamos por ID de cliente
+                    totalSpent: { $sum: "$total" }, // Suma del total gastado
+                    totalOrders: { $sum: 1 } // Contamos la cantidad de pedidos
+                }
+            },
+            {
+                $lookup: {
+                    from: "clients", // Relacionamos con la colección de clientes
+                    localField: "_id", // El campo para hacer la relación
+                    foreignField: "_id", // El campo de referencia en clients
+                    as: "client"
+                }
+            },
+            {
+                $unwind: "$client" // Desenrollamos el array resultante de client
+            },
+            {
+                $sort: { totalSpent: -1 } // Orden descendente por total gastado
+            },
+            {
+                $limit: 10 // Top 10 clientes (opcional)
+            },
+            {
+                $project: {
+                    client: 1, // Devuelve la información del cliente
+                    totalOrders: 1, // El total de pedidos
+                    totalSpent: 1 // El total gastado
+                }
+            }
+        ]);
+
+        return clients;
+    } catch (error) {
+        console.log("Error: ", error);
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
+        throw new ApolloError("Error fetching best clients", "INTERNAL_SERVER_ERROR", {
+            statusCode: 500,
+        });
     }
 }

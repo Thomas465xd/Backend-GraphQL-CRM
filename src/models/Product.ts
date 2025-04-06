@@ -44,6 +44,8 @@ const productSchema : Schema = new Schema({
 
 }, {timestamps: true})
 
+productSchema.index({ name: "text"}) // Create a text index on the name field
+
 const Product = mongoose.model<ProductInterface>('Product', productSchema)
 
 export default Product;

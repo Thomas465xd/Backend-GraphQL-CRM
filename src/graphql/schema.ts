@@ -22,6 +22,7 @@ const typeDefs = gql`
         stock: Int
         price: Float
         discount: Float
+        priceWithDiscount: Float
         description: String
         createdAt: String
     }
@@ -48,9 +49,23 @@ const typeDefs = gql`
         id: ID
         order: [OrderItem]
         total: Float
+        totalWithDiscount: Float
         client: ID
         seller: ID
         status: OrderStatus
+    }
+
+    # //* Advance Search Types
+    type TopClient {
+        client: Client
+        totalOrders: Int
+        totalSpent: Float
+    }
+
+    type TopSeller {
+        seller: User
+        totalOrders: Int
+        totalSales: Float
     }
 
     # //? User Inputs
@@ -101,9 +116,9 @@ const typeDefs = gql`
     }
 
     input OrderInput {
-        order: [OrderItemInput!]!
+        order: [OrderItemInput]
         total: Float
-        client: ID!
+        client: ID
         status: OrderStatus
     }
 
@@ -121,6 +136,16 @@ const typeDefs = gql`
         getClientById(id: ID!): Client
 
         # //~ Order Queries
+        getOrders: [Order]
+        getOrdersBySeller: [Order]
+        getOrdersByClient(client: ID!): [Order]
+        getOrdersByStatus(status: OrderStatus!): [Order]
+        getOrderById(id: ID!): Order
+
+        # //* Advance Search
+        getBestClients: [TopClient]
+        getBestSellers: [TopSeller]
+        getProductsByName(text: String!): [Product]
     }
 
     type Mutation {
@@ -140,7 +165,8 @@ const typeDefs = gql`
 
         # //~ Order Mutations
         createOrder(input: OrderInput) : Order
-
+        updateOrder(id: ID!, input: OrderInput) : Order
+        deleteOrder(id: ID!) : String
     }
 `;
 
