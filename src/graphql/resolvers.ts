@@ -1,5 +1,6 @@
 import { authUser, createUser, getUser } from "../controllers/AuthController";
 import { createClient, deleteClient, getClientById, getClients, getSellerClients, updateClient } from "../controllers/ClientController";
+import { createOrder } from "../controllers/OrderController";
 import { createProduct, deleteProduct, getProductById, getProducts, updateProduct } from "../controllers/ProductController";
 
 const resolvers = {
@@ -31,6 +32,9 @@ const resolvers = {
         createClient: async (_, { input }, ctx ) => createClient(input, ctx), 
         updateClient: async (_, { id, input }, ctx) => updateClient(id, input, ctx),
         deleteClient: async (_, { id }, ctx) => deleteClient(id, ctx),
+
+        //~ Order Mutations
+        createOrder: async (_, { input }, ctx) => createOrder(input, ctx),
     }
 };
 

@@ -5,6 +5,7 @@ export interface ProductInterface extends Document {
     stock: number; 
     price: number;
     discount: number;
+    priceWithDiscount: number;
     description: string;
 }
 
@@ -17,7 +18,6 @@ const productSchema : Schema = new Schema({
     stock: {
         type: Number, 
         required: true, 
-        trim: true
     }, 
     price: {
         type: Number, 
@@ -27,7 +27,14 @@ const productSchema : Schema = new Schema({
     discount: {
         type: Number, 
         required: false, 
-        trim: true
+        trim: true, 
+        default: 0
+    },
+    priceWithDiscount: {
+        type: Number, 
+        required: false, 
+        trim: true,
+        default: 0
     },
     description: {
         type: String, 

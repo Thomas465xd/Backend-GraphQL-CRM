@@ -13,7 +13,7 @@ type UserInput = {
 };
 
 // Create User Function
-export const createUser = async (input) => {
+export const createUser = async (input: UserInput) => {
     try {
         // Validar input
         const { name, surname, email, password } = input;
@@ -35,7 +35,13 @@ export const createUser = async (input) => {
         
         return user;
     } catch (error) {
-        console.log(error)
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
         throw new ApolloError("Error creating user", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
@@ -85,6 +91,13 @@ export const getUser = async (token) => {
 
         return user;
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+        
         throw new ApolloError("Invalid token", "UNAUTHORIZED", {
             statusCode: 401,
         });

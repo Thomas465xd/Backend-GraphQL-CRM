@@ -15,6 +15,13 @@ export const getClients = async () => {
         const clients = await Client.find({}).sort({ createdAt: -1 });
         return clients
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
         throw new ApolloError("Error Fetching Clients", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
@@ -23,11 +30,25 @@ export const getClients = async () => {
 
 export const getSellerClients = async (ctx) => {
     try {
+        // Check if the user is authenticated
+        if (!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
         const { id: seller } = ctx.user;
 
         const clients = await Client.find({ seller }).sort({ createdAt: -1 });
         return clients
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
         throw new ApolloError("Error Fetching Clients", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
@@ -89,6 +110,13 @@ export const createClient = async (input, ctx) => {
         const result = await newClient.save();
         return result;
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+        
         throw new ApolloError("Error Creating Client", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
@@ -117,6 +145,13 @@ export const updateClient = async (id: string, input: ClientInput, ctx) => {
         return updatedClient
 
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
         throw new ApolloError("Error Updating Client", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
@@ -145,6 +180,13 @@ export const deleteClient = async (id: string, ctx) => {
         await Client.findOneAndDelete({ _id: id });
         return "Client deleted Succesfully"
     } catch (error) {
+        console.log("Error: ", error);
+        
+        // Check if it's already an ApolloError, if so, rethrow it
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
         throw new ApolloError("Error Deleting Client", "INTERNAL_SERVER_ERROR", {
             sttusCode: 500
         })
