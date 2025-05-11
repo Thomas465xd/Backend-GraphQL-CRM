@@ -9,11 +9,17 @@ type OrderInput = {
     totalWithDiscount?: number;
     client: string;
     seller: string;
-    status?: 'PENDING' | 'COMPLETED' | 'CANCELED';
+    status?: 'PENDING' | 'COMPLETED' | 'CANCELLED';
+}
+
+type Context = {
+    user: {
+        id: string; 
+    }
 }
 
 //~ Get All Orders (without discrimination)
-export const getOrders = async (ctx) => {
+export const getOrders = async (ctx: Context) => {
     try {
         //check if the user is authenticated
         if(!ctx.user) {
@@ -22,8 +28,10 @@ export const getOrders = async (ctx) => {
             });
         }
 
+        const { id } = ctx.user;
+
         // Get all orders from the DB
-        const orders = await Order.find({ seller: ctx.user.id }).sort({ createdAt: -1 });
+        const orders = await Order.find({ seller: id }).sort({ createdAt: -1 }).populate("client");
         return orders;
     } catch (error) {
         console.log("Error: ", error);
@@ -40,7 +48,7 @@ export const getOrders = async (ctx) => {
 }
 
 //~ Get Orders by Seller
-export const getOrdersBySeller = async (ctx) => {
+export const getOrdersBySeller = async (ctx: Context) => {
     try {
         // Check if the user is authenticated
         if (!ctx.user) {
@@ -49,8 +57,11 @@ export const getOrdersBySeller = async (ctx) => {
             });
         }
 
+        // Get the user id
+        const { id } = ctx.user;
+
         // Get all orders from the DB
-        const orders = await Order.find({ seller: ctx.user.id }).sort({ createdAt: -1 });
+        const orders = await Order.find({ seller: id }).sort({ createdAt: -1 });
         return orders;
     } catch (error) {
         console.log("Error: ", error);
@@ -119,7 +130,7 @@ export const getOrdersByStatus = async (status: string, ctx) => {
         }
 
         // Check if the status passed is valid
-        const validStatuses = ['PENDING', 'COMPLETED', 'CANCELED'];
+        const validStatuses = ['PENDING', 'COMPLETED', 'CANCELLED'];
         if(!validStatuses.includes(status)) {
             throw new ApolloError("Invalid status", "BAD_REQUEST", {
                 statusCode: 400
@@ -195,6 +206,7 @@ export const createOrder = async (input: OrderInput, ctx) => {
         }
 
         const { client } = input;
+        console.log(client)
 
         // Verify if the client exists
         const clientExists = await Client.findById(client);
@@ -265,6 +277,7 @@ export const createOrder = async (input: OrderInput, ctx) => {
         // Save the order to the DB
         const result = await newOrder.save();
         return result;
+
     } catch (error) {
         console.log("Error: ", error);
         

@@ -2,20 +2,21 @@ import { get } from "http";
 import { authUser, createUser, getBestSellers, getUser } from "../controllers/AuthController";
 import { createClient, deleteClient, getBestClients, getClientById, getClients, getSellerClients, updateClient } from "../controllers/ClientController";
 import { createOrder, deleteOrder, getOrderById, getOrders, getOrdersByClient, getOrdersBySeller, getOrdersByStatus, updateOrder } from "../controllers/OrderController";
-import { createProduct, deleteProduct, getProductById, getProducts, getProductsByName, updateProduct } from "../controllers/ProductController";
+import { createProduct, deleteProduct, getProductById, getProducts, getProductsByName, getProductsBySeller, updateProduct } from "../controllers/ProductController";
 
 const resolvers = {
     // TODO : Add Context to validate if the user is authenticated
     Query: {
         //* User Queries
-        getUser: async (_, { token } ) => getUser(token),
+        getUser: async (_, { }, ctx ) => getUser(ctx),
 
         //^ Product Queries
-        getProducts: async () => getProducts(), 
-        getProductById: async (_, { id } ) => getProductById(id),
+        getProducts: async (_, { }, ctx) => getProducts(ctx), 
+        getProductsBySeller: async (_, { }, ctx) => getProductsBySeller(ctx),
+        getProductById: async (_, { id }, ctx ) => getProductById(id, ctx),
 
         //& Client Queries
-        getClients: async (_, { }, ctx) => getClients(),
+        getClients: async (_, { }, ctx) => getClients(ctx),
         getSellerClients: async (_, { }, ctx) => getSellerClients(ctx),
         getClientById: async (_, { id }, ctx ) => getClientById(id, ctx),
 
@@ -37,7 +38,7 @@ const resolvers = {
         authenticateUser: async (_, { input }) => authUser(input),
 
         //^ Product Mutations
-        createProduct: async (_, { input } ) => createProduct(input),
+        createProduct: async (_, { input }, ctx ) => createProduct(input, ctx),
         updateProduct: async (_, { id, input }) => updateProduct(id, input),
         deleteProduct: async (_, { id } ) => deleteProduct(id),
 

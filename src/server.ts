@@ -25,27 +25,23 @@ async function startServer() {
         resolvers, 
         context: ({ req }) => { 
             const authHeader = req.headers["authorization"] || "";
-            //console.log("Authorization Header:", authHeader); // 🔍 DEBUG
-        
-            const token = authHeader.replace("Bearer ", "").trim(); // Remove 'Bearer ' prefix
-            //console.log("Token after cleaning:", token); // 🔍 DEBUG
-        
+            const token = authHeader.replace("Bearer ", "").trim(); 
+    
             if (token) {
                 try {
-                    // Get the JWT secret
                     const secret = process.env.JWT_SECRET?.trim();
                     if (!secret) throw new Error("JWT_SECRET is not defined");
-        
-                    // Verify and decode the token
+    
                     const user = jwt.verify(token, secret);
-                    //console.log("Decoded User:", user); // 🔍 DEBUG
-        
                     return { user };
                 } catch (error) {
-                    //console.log("Error verifying token:", error.message);
-                    throw new Error("Invalid token");
+                    // ⚠️ NO lanzar error, solo ignorar el token inválido
+                    console.warn("Invalid token ignored in context:", error.message);
+                    return {}; // ← Sigue sin usuario, pero no rompe el servidor
                 }
             }
+    
+            return {}; // ← También importante para cuando no hay token
         },
         formatError: (err) => {
             if (err.extensions?.statusCode) {
@@ -54,9 +50,10 @@ async function startServer() {
                     statusCode: err.extensions.statusCode,
                 };
             }
+
             return err;
         }
-    });
+    });    
 
     await server.start();
     server.applyMiddleware({ app });

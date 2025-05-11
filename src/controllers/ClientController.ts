@@ -11,8 +11,21 @@ type ClientInput = {
     phone: string
 }
 
-export const getClients = async () => {
+type Context = {
+    user: {
+        id: string; 
+    }
+}
+
+export const getClients = async (ctx: Context) => {
     try {
+        // Check if the user is authenticated
+        if (!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
         const clients = await Client.find({}).sort({ createdAt: -1 });
         return clients
     } catch (error) {
@@ -83,6 +96,7 @@ export const getClientById = async (id: string, ctx) => {
 };
 
 
+// * Create Client
 export const createClient = async (input, ctx) => {
     try {
         // Verificar que el Usuario este Logueado
@@ -94,7 +108,7 @@ export const createClient = async (input, ctx) => {
         const { email } = input;
 
         // Check if client already exists
-        const client = await Client.findOne({ email, seller: input.seller });
+        const client = await Client.findOne({ email, seller: ctx.user.id });
         if (client) {
             throw new ApolloError("Client already exists for this seller", "CLIENT_EXISTS", {
                 statusCode: 400,
@@ -132,6 +146,14 @@ export const updateClient = async (id: string, input: ClientInput, ctx) => {
             throw new ApolloError("Client not found", "NOT_FOUND", {
                 statusCode: 404
             })
+        }
+
+        // Review if the client is already registered
+        const duplicatedClient = await Client.findOne({ email: input.email, seller: ctx.user.id });
+        if (duplicatedClient && duplicatedClient._id.toString() !== id) {
+            throw new ApolloError("Client already exists for this seller", "CLIENT_EXISTS", {
+                statusCode: 400,
+            });
         }
 
         // Review if the client belongs to the auth user

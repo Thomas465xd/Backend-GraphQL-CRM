@@ -2,6 +2,10 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 interface OrderItem {
     product: mongoose.Types.ObjectId;
+    name: string
+    price: number 
+    discount: number
+    priceWithDiscount: number
     quantity: number;
 }
 
@@ -11,7 +15,7 @@ export interface OrderInterface extends Document {
     totalWithDiscount?: number;
     client: string;
     seller: string;
-    status: 'PENDING' | 'COMPLETED' | 'CANCELED';
+    status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
 }
 
 const orderSchema: Schema = new Schema({
@@ -19,6 +23,22 @@ const orderSchema: Schema = new Schema({
         product: {
             type: Schema.Types.ObjectId,
             ref: 'Product',
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        }, 
+        price: {
+            type: Number,
+            required: true
+        }, 
+        discount: {
+            type: Number,
+            required: true
+        }, 
+        priceWithDiscount: {
+            type: Number,
             required: true
         },
         quantity: {

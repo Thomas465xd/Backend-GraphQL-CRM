@@ -9,9 +9,22 @@ type ProductInput = {
     description?: string;
 }
 
+type Context = {
+    user: {
+        id: string; 
+    }
+}
+
 //? Get All Products
-export const getProducts = async () => {
+export const getProducts = async (ctx: Context) => {
     try {
+        // Check if the user is authenticated
+        if(!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
         const products = await Product.find({}).sort({ createdAt: -1 });
         return products;
     } catch (error) {
@@ -28,9 +41,40 @@ export const getProducts = async () => {
     }
 }
 
-//? Get a single Product By ID
-export const getProductById = async (id: string) => {
+//? Get Products By Seller
+export const getProductsBySeller = async (ctx) => {
     try {
+        if(!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
+        // Get Products by Seller
+        const userId = ctx.user.id;
+
+        const products = await Product.find({ seller: userId }).sort({ createdAt: -1 });
+        if(!products) {
+            throw new ApolloError("No Products found", "NOT_FOUND", {
+                statusCode: 404, 
+            })
+        }
+
+        return products; 
+    } catch (error) {
+        
+    }
+}
+
+//? Get a single Product By ID
+export const getProductById = async (id: string, ctx: Context) => {
+    try {
+        if(!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
         const product = await Product.findById(id);
         if (!product) {
             throw new ApolloError("Product not found", "NOT_FOUND", {
@@ -54,12 +98,19 @@ export const getProductById = async (id: string) => {
 }
 
 //? Create New Product
-export const createProduct = async (input : ProductInput) => {
+export const createProduct = async (input : ProductInput, ctx : Context) => {
     try {
-        // Validate Product
+        // Check if user is authenticated
+        if(!ctx) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
 
         // Create a new Product Instance
         const product = new Product(input)
+
+        product.seller = ctx.user.id; // Assign seller to the product
 
         // transform discount to percentage and assign product price with discount
         if(input.discount) {

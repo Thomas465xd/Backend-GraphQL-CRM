@@ -43,16 +43,22 @@ const typeDefs = gql`
     type OrderItem {
         id: ID
         quantity: Int
+        name: String
+        price: Float
+        discount: Float
+        priceWithDiscount: Float
     }
 
     type Order {
         id: ID
-        order: [OrderItem]
+        order: [OrderItem]!
         total: Float
         totalWithDiscount: Float
-        client: ID
+        client: Client
         seller: ID
         status: OrderStatus
+        createdAt: String
+        updatedAt: String
     }
 
     # //* Advance Search Types
@@ -90,6 +96,7 @@ const typeDefs = gql`
         price: Float!
         discount: Float
         description: String
+        priceWithDiscount: Float
     }
 
     # //^ Client Inputs
@@ -97,7 +104,7 @@ const typeDefs = gql`
         name: String!
         surname: String!
         businessName: String!
-        role: String!
+        role: String
         email: String!
         phone: String
         address: String
@@ -107,27 +114,33 @@ const typeDefs = gql`
     input OrderItemInput {
         product: ID!
         quantity: Int!
+        name: String!
+        price: Float!
+        discount: Float!
+        priceWithDiscount: Float
     }
 
     enum OrderStatus {
         PENDING
         COMPLETED
-        CANCELED
+        CANCELLED
     }
 
     input OrderInput {
         order: [OrderItemInput]
         total: Float
+        totalWithDiscount: Float
         client: ID
         status: OrderStatus
     }
 
     type Query {
         # //? User Queries
-        getUser(token: String!) : User
+        getUser : User
 
         # //& Product Queries
         getProducts : [Product]
+        getProductsBySeller: [Product]
         getProductById(id: ID!) : Product
 
         # //^ Client Queries

@@ -7,6 +7,7 @@ export interface ProductInterface extends Document {
     discount: number;
     priceWithDiscount: number;
     description: string;
+    seller: string; 
 }
 
 const productSchema : Schema = new Schema({
@@ -40,6 +41,11 @@ const productSchema : Schema = new Schema({
         type: String, 
         required: false, 
         trim: true
+    }, 
+    seller: {
+        type: Schema.Types.ObjectId, 
+        ref: 'User',
+        required: true
     }
 
 }, {timestamps: true})

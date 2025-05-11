@@ -3,6 +3,7 @@ import User from "../models/User";
 import { comparePassword, hashPassword } from "../utils/auth";
 import { ApolloError } from "apollo-server-express";
 import { generateJWT } from "../utils/jwt";
+import Order from "../models/Order";
 
 // User Input Type
 type UserInput = {
@@ -75,13 +76,9 @@ export const authUser = async ({ email, password }) => {
 }
 
 // Get Authenticated User
-export const getUser = async (token) => {
+export const getUser = async (ctx) => {
     try {
-        // Verify if the token is valid
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
-        const userId = decoded.id;
-
-        // Find user by id
+        const userId = ctx.user.id
         const user = await User.findById(userId);
         if (!user) {
             throw new ApolloError("User not found", "NOT_FOUND", {
@@ -100,6 +97,60 @@ export const getUser = async (token) => {
         
         throw new ApolloError("Invalid token", "UNAUTHORIZED", {
             statusCode: 401,
+        });
+    }
+}
+
+// * Advance Search Functions * //
+
+export const getBestSellers = async () => {
+    try {
+        const sellers = await Order.aggregate([
+            {
+                $match: { status: "COMPLETED" }
+            }, 
+            {
+                $group: {
+                    _id: "$seller", // Agrupamos por ID de vendedor
+                    totalSales: { $sum: "$total" }, // Suma del total vendido (lo creamos)
+                    totalOrders: { $sum: 1 } // Contamos la cantidad de pedidos (lo creamos)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users", // Relacionamos con la colección de usuarios (vendedores)
+                    localField: "_id", // El campo para hacer la relación
+                    foreignField: "_id", // El campo de referencia en users
+                    as: "seller" // El resultado se guardará en seller
+                }
+            }, 
+            {
+                $unwind: "$seller" // Desenrollamos el array resultante de seller
+            },
+            {
+                $sort: { totalSales: -1 } // Orden descendente por total vendido
+            },
+            {
+                $limit: 3 // Top 10 vendedores (opcional)
+            },
+            {
+                $project: {
+                    seller: 1, // Devuelve la información del vendedor
+                    totalOrders: 1, // El total de pedidos
+                    totalSales: 1 // El total vendido
+                }
+            }
+        ])
+
+        return sellers;
+    } catch (error) {
+        console.log("Error: ", error);
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
+        throw new ApolloError("Error fetching best sellers", "INTERNAL_SERVER_ERROR", {
+            statusCode: 500,
         });
     }
 }

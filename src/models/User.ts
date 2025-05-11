@@ -29,10 +29,6 @@ const userSchema : Schema = new Schema({
         type: String, 
         required: true, 
         trim: true
-    }, 
-    createdAt: {
-        type: Date, 
-        default: Date.now
     }
 }, {timestamps: true})
 
