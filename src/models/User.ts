@@ -4,6 +4,7 @@ export interface UserInterface extends Document {
     name: string;
     surname: string; 
     email: string; 
+    role: string;
     password: string; 
     createdAt: Date;
 }
@@ -23,6 +24,11 @@ const userSchema : Schema = new Schema({
         type: String, 
         required: true, 
         unique: true,
+        trim: true
+    },
+    role: {
+        type: String, 
+        required: false, 
         trim: true
     },
     password: {

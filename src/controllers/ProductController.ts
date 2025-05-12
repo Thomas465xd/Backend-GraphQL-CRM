@@ -188,33 +188,3 @@ export const deleteProduct = async (id: string) => {
         });
     }
 }
-
-// * ADVANCE SEARCH METHODS * //
-
-export const getProductsByName = async (text: string) => {
-    try {
-        const products = await Product.find({
-            $text: {
-                $search: text,
-                $caseSensitive: false,
-            }
-        }).sort({
-            score: { 
-                $meta: "textScore" 
-            } 
-        }).limit(10); // Ordena según la relevancia del texto
-
-        return products;
-    } catch (error) {
-        console.log("Error: ", error);
-        
-        // Check if it's already an ApolloError, if so, rethrow it
-        if (error instanceof ApolloError) {
-            throw error;
-        }
-
-        throw new ApolloError("Error fetching products by name", "INTERNAL_SERVER_ERROR", {
-            statusCode: 500,
-        });
-    }
-}

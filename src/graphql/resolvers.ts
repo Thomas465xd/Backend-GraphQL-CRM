@@ -1,8 +1,8 @@
-import { get } from "http";
-import { authUser, createUser, getBestSellers, getUser } from "../controllers/AuthController";
-import { createClient, deleteClient, getBestClients, getClientById, getClients, getSellerClients, updateClient } from "../controllers/ClientController";
+import { getBestClients, getBestSellers, getProductsByName, getRecentActivity } from "../controllers/AnalyticsController";
+import { authUser, createUser, getUser } from "../controllers/AuthController";
+import { createClient, deleteClient, getClientById, getClients, getSellerClients, updateClient } from "../controllers/ClientController";
 import { createOrder, deleteOrder, getOrderById, getOrders, getOrdersByClient, getOrdersBySeller, getOrdersByStatus, updateOrder } from "../controllers/OrderController";
-import { createProduct, deleteProduct, getProductById, getProducts, getProductsByName, getProductsBySeller, updateProduct } from "../controllers/ProductController";
+import { createProduct, deleteProduct, getProductById, getProducts, getProductsBySeller, updateProduct } from "../controllers/ProductController";
 
 const resolvers = {
     // TODO : Add Context to validate if the user is authenticated
@@ -28,9 +28,10 @@ const resolvers = {
         getOrderById: async (_, { id }, ctx) => getOrderById(id, ctx),
 
         //? Advance Search Queries
-        getBestClients: async () => getBestClients(),
-        getBestSellers: async () => getBestSellers(),
-        getProductsByName: async (_, { text }) => getProductsByName(text),
+        getBestClients: async (_, { }, ctx) => getBestClients(ctx),
+        getBestSellers: async (_, { }, ctx) => getBestSellers(ctx),
+        getProductsByName: async (_, { text }, ctx) => getProductsByName(text, ctx),
+        getRecentActivity: async (_, { }, ctx) => getRecentActivity(ctx),
     },
     Mutation: {
         //* User Mutations
@@ -51,6 +52,20 @@ const resolvers = {
         createOrder: async (_, { input }, ctx) => createOrder(input, ctx),
         updateOrder: async (_, { id, input }, ctx) => updateOrder(id, input, ctx),
         deleteOrder: async (_, { id }, ctx) => deleteOrder(id, ctx),
+    }, 
+    RecentActivity: {
+        __resolveType(obj) {
+            if ("client" in obj && "total" in obj) {
+                return "Order";
+            }
+            if ("price" in obj && "stock" in obj) {
+                return "Product";
+            }
+            if ("email" in obj && !("price" in obj)) {
+                return "Client";
+            }
+            return null;
+        },
     }
 };
 

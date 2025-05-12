@@ -37,6 +37,7 @@ const typeDefs = gql`
         email: String
         phone: String
         address: String
+        createdAt: String
     }
 
     # //~ Order Types
@@ -73,6 +74,8 @@ const typeDefs = gql`
         totalOrders: Int
         totalSales: Float
     }
+
+    union RecentActivity = Order | Product | Client
 
     # //? User Inputs
     input UserInput {
@@ -159,6 +162,7 @@ const typeDefs = gql`
         getBestClients: [TopClient]
         getBestSellers: [TopSeller]
         getProductsByName(text: String!): [Product]
+        getRecentActivity: [RecentActivity]
     }
 
     type Mutation {
