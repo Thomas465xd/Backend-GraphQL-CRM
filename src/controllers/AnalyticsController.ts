@@ -201,12 +201,15 @@ export const getRecentActivity = async (ctx: Context) => {
             });
         }
 
+        const userId = ctx.user.id;
+
         const limit = 1;
 
         // Fetch recent orders
         const recentOrders = await Order.aggregate([
             { $sort: { createdAt: -1 } },
             { $limit: limit },
+            { $match: { seller: userId } },
             {
                 $lookup: {
                     from: "clients",            // nombre de la colección real
@@ -225,6 +228,7 @@ export const getRecentActivity = async (ctx: Context) => {
         const recentProducts = await Product.aggregate([
             { $sort: { createdAt: -1 } },
             { $limit: limit },
+            { $match: { seller: userId } },
             { $addFields: { type: "Product" } }
         ]);
 
@@ -232,6 +236,7 @@ export const getRecentActivity = async (ctx: Context) => {
         const recentClients = await Client.aggregate([
             { $sort: { createdAt: -1 } },
             { $limit: limit },
+            { $match: { seller: userId } },
             { $addFields: { type: "Client" } }
         ]);
 
