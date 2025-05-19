@@ -2,6 +2,7 @@ import { ApolloError } from "apollo-server-express";
 import Order from "../models/Order";
 import Product from "../models/Product";
 import Client from "../models/Client";
+import { Types } from "mongoose";
 
 type Context = {
     user: {
@@ -206,6 +207,17 @@ export const getRecentActivity = async (ctx: Context) => {
         const recentOrders = await Order.aggregate([
             { $sort: { createdAt: -1 } },
             { $limit: limit },
+            {
+                $lookup: {
+                    from: "clients",            // nombre de la colección real
+                    localField: "client",       // 👈 este es el campo que contiene el ObjectId de referencia
+                    foreignField: "_id",        // este es el campo en la colección de destino
+                    as: "client"
+                }
+            },
+            {
+                $unwind: "$client" // Desenrollamos el array resultante de client
+            },
             { $addFields: { type: "Order" } }
         ]);
 
@@ -240,6 +252,106 @@ export const getRecentActivity = async (ctx: Context) => {
         }
 
         throw new ApolloError("Error fetching recent activity", "INTERNAL_SERVER_ERROR", {
+            statusCode: 500,
+        });
+    }
+};
+
+/*
+ * Get Monthly Revenue, Pending Orders, & Registered Orders 
+*/
+export const getGeneralActivity = async (ctx: Context) => {
+    try {
+        if (!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401,
+            });
+        }
+
+        // Get user id 
+        const { id } = ctx.user;
+        const sellerId = new Types.ObjectId(id);
+
+        // Get start of current month
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // Monthly Revenue (only completed orders, optional)
+        const monthlyRevenueAgg = await Order.aggregate([
+            {
+                $match: {
+                    seller: sellerId,
+                    createdAt: { $gte: startOfMonth }, 
+                    status: "COMPLETED",
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$total" }
+                }
+            }
+        ]);
+
+        // Total Revenue
+        const totalRevenueAgg = await Order.aggregate([
+            {
+                $match: {
+                    seller: sellerId,
+                    status: "COMPLETED"
+                }, 
+            },   
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$total" }
+                }
+            }
+        ])
+
+        // Get total products
+        const totalProducts = await Product.countDocuments({ seller: id });
+
+        // Get total clients 
+        const totalClients = await Client.countDocuments({ seller: id });
+
+        // Monthly Revenue
+        const monthlyRevenue = monthlyRevenueAgg[0]?.total || 0;
+
+        // Total Revenue
+        const totalRevenue = totalRevenueAgg[0]?.total || 0;
+
+        // Pending Orders
+        const pendingOrders = await Order.countDocuments({ status: "PENDING", seller: id });
+
+        // Completed Orders
+        const completedOrders = await Order.countDocuments({ status: "COMPLETED", seller: id });
+
+        // Cancelled Orders 
+        const cancelledOrders = await Order.countDocuments({ status: "CANCELLED", seller: id });
+
+        // Total Registered Orders
+        const totalOrders = await Order.countDocuments({ seller: id });
+
+        return {
+            totalProducts,
+            totalClients, 
+            totalRevenue, 
+            monthlyRevenue,
+            pendingOrders,
+            completedOrders,
+            cancelledOrders,
+            totalOrders
+        };
+
+    } catch (error) {
+        console.log("Error: ", error);
+
+        if (error instanceof ApolloError) {
+            throw error;
+        }
+
+        throw new ApolloError("Error fetching general activity", "INTERNAL_SERVER_ERROR", {
             statusCode: 500,
         });
     }

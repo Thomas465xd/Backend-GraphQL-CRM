@@ -1,5 +1,5 @@
-import { getBestClients, getBestSellers, getProductsByName, getRecentActivity } from "../controllers/AnalyticsController";
-import { authUser, createUser, getUser } from "../controllers/AuthController";
+import { getBestClients, getBestSellers, getGeneralActivity, getProductsByName, getRecentActivity } from "../controllers/AnalyticsController";
+import { authUser, changePassword, createUser, getUser, updateUser } from "../controllers/AuthController";
 import { createClient, deleteClient, getClientById, getClients, getSellerClients, updateClient } from "../controllers/ClientController";
 import { createOrder, deleteOrder, getOrderById, getOrders, getOrdersByClient, getOrdersBySeller, getOrdersByStatus, updateOrder } from "../controllers/OrderController";
 import { createProduct, deleteProduct, getProductById, getProducts, getProductsBySeller, updateProduct } from "../controllers/ProductController";
@@ -32,16 +32,19 @@ const resolvers = {
         getBestSellers: async (_, { }, ctx) => getBestSellers(ctx),
         getProductsByName: async (_, { text }, ctx) => getProductsByName(text, ctx),
         getRecentActivity: async (_, { }, ctx) => getRecentActivity(ctx),
+        getGeneralActivity: async (_, { }, ctx) => getGeneralActivity(ctx),
     },
     Mutation: {
         //* User Mutations
         createUser: async (_, { input }) => createUser(input),
         authenticateUser: async (_, { input }) => authUser(input),
+        updateUser: async (_, { input }, ctx) => updateUser(input, ctx),
+        changePassword: async (_, { input }, ctx) => changePassword(input, ctx),
 
         //^ Product Mutations
         createProduct: async (_, { input }, ctx ) => createProduct(input, ctx),
-        updateProduct: async (_, { id, input }) => updateProduct(id, input),
-        deleteProduct: async (_, { id } ) => deleteProduct(id),
+        updateProduct: async (_, { id, input }, ctx) => updateProduct(id, input, ctx),
+        deleteProduct: async (_, { id }, ctx ) => deleteProduct(id, ctx),
 
         //& Client Mutations
         createClient: async (_, { input }, ctx ) => createClient(input, ctx), 
@@ -53,6 +56,7 @@ const resolvers = {
         updateOrder: async (_, { id, input }, ctx) => updateOrder(id, input, ctx),
         deleteOrder: async (_, { id }, ctx) => deleteOrder(id, ctx),
     }, 
+    // Complex resolvers
     RecentActivity: {
         __resolveType(obj) {
             if ("client" in obj && "total" in obj) {

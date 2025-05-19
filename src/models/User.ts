@@ -4,7 +4,10 @@ export interface UserInterface extends Document {
     name: string;
     surname: string; 
     email: string; 
+    phone: string;
+    businessName: string;
     role: string;
+    address: string; 
     password: string; 
     createdAt: Date;
 }
@@ -26,7 +29,22 @@ const userSchema : Schema = new Schema({
         unique: true,
         trim: true
     },
+    phone: {
+        type: String, 
+        required: false, 
+        trim: true
+    },
+    businessName: {
+        type: String, 
+        required: false, 
+        trim: true
+    },
     role: {
+        type: String, 
+        required: false, 
+        trim: true
+    },
+    address: {
         type: String, 
         required: false, 
         trim: true

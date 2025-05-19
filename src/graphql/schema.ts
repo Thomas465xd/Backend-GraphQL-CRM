@@ -8,6 +8,10 @@ const typeDefs = gql`
         name: String!
         surname: String!
         email: String!
+        phone: String
+        businessName: String
+        role: String
+        address: String
         createdAt: String
     }
 
@@ -77,6 +81,17 @@ const typeDefs = gql`
 
     union RecentActivity = Order | Product | Client
 
+    type GeneralActivity {
+        pendingOrders: Int 
+        completedOrders: Int 
+        cancelledOrders: Int 
+        monthlyRevenue: Float
+        totalRevenue: Float
+        totalOrders: Int
+        totalClients: Int 
+        totalProducts: Int 
+    }
+
     # //? User Inputs
     input UserInput {
         # Create User Input
@@ -86,10 +101,27 @@ const typeDefs = gql`
         password: String!
     }
 
+    input UpdateUserInput {
+        # Update User Input
+        name: String
+        surname: String
+        email: String
+        phone: String
+        businessName: String
+        role: String
+        address: String
+    }
+
     input AuthInput {
         # Login User Input
         email: String!
         password: String!
+    }
+
+    input PasswordInput {
+        # Change Password Input
+        currentPassword: String!
+        newPassword: String!
     }
 
     # //& Product Inputs
@@ -163,12 +195,15 @@ const typeDefs = gql`
         getBestSellers: [TopSeller]
         getProductsByName(text: String!): [Product]
         getRecentActivity: [RecentActivity]
+        getGeneralActivity: GeneralActivity
     }
 
     type Mutation {
         # //? User Mutations
         createUser(input: UserInput) : User
         authenticateUser(input: AuthInput) : Token
+        updateUser(input: UpdateUserInput) : User
+        changePassword(input: PasswordInput) : String
 
         #//& Product Mutations
         createProduct(input: ProductInput) : Product

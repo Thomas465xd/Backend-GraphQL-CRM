@@ -135,8 +135,15 @@ export const createProduct = async (input : ProductInput, ctx : Context) => {
 }
 
 //? Update a Product
-export const updateProduct = async (id: string, input: ProductInput) => {
+export const updateProduct = async (id: string, input: ProductInput, ctx: Context) => {
     try {
+        // Check if user is authenticated
+        if(!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401, 
+            })
+        }
+
         const product = await Product.findById(id);
         if (!product) {
             throw new ApolloError("Product not found", "NOT_FOUND", {
@@ -162,8 +169,15 @@ export const updateProduct = async (id: string, input: ProductInput) => {
 }
 
 //? Delete a Product
-export const deleteProduct = async (id: string) => {
+export const deleteProduct = async (id: string, ctx: Context) => {
     try {
+        // Check if user is authenticated
+        if(!ctx.user) {
+            throw new ApolloError("User not authenticated", "UNAUTHORIZED", {
+                statusCode: 401, 
+            })
+        }
+
         const product = await Product.findById(id);
         if(!product) {
             throw new ApolloError("Product not found", "NOT_FOUND", {
