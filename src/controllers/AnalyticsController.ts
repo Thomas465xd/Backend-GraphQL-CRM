@@ -201,44 +201,45 @@ export const getRecentActivity = async (ctx: Context) => {
             });
         }
 
-        const userId = ctx.user.id;
+        // Get user id 
+        const { id } = ctx.user;
+        const sellerId = new Types.ObjectId(id);
 
         const limit = 1;
 
         // Fetch recent orders
         const recentOrders = await Order.aggregate([
-            { $sort: { createdAt: -1 } },
-            { $limit: limit },
-            { $match: { seller: userId } },
+            { $match: { seller: sellerId } },      // Filtrar primero por seller
+            { $sort: { createdAt: -1 } },        // Luego ordenar
+            { $limit: limit },                    // Limitar resultados
             {
                 $lookup: {
-                    from: "clients",            // nombre de la colección real
-                    localField: "client",       // 👈 este es el campo que contiene el ObjectId de referencia
-                    foreignField: "_id",        // este es el campo en la colección de destino
+                    from: "clients",
+                    localField: "client",
+                    foreignField: "_id",
                     as: "client"
                 }
             },
-            {
-                $unwind: "$client" // Desenrollamos el array resultante de client
-            },
+            { $unwind: "$client" },
             { $addFields: { type: "Order" } }
         ]);
 
         // Fetch recent products
         const recentProducts = await Product.aggregate([
+            { $match: { seller: sellerId } },      // Filtrar primero
             { $sort: { createdAt: -1 } },
             { $limit: limit },
-            { $match: { seller: userId } },
             { $addFields: { type: "Product" } }
         ]);
 
         // Fetch recent clients
         const recentClients = await Client.aggregate([
+            { $match: { seller: sellerId } },      // Filtrar primero
             { $sort: { createdAt: -1 } },
             { $limit: limit },
-            { $match: { seller: userId } },
             { $addFields: { type: "Client" } }
         ]);
+
 
         // Combine and sort all results by createdAt
         const combined = [...recentOrders, ...recentProducts, ...recentClients]
